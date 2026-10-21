@@ -68,16 +68,19 @@ while True:
         cv2.line(frame,(x_degeri-25,y_degeri),(x_degeri+25,y_degeri),(0,0,255),3)
         cv2.line(frame,(x_degeri,y_degeri-25),(x_degeri,y_degeri+25),(0,0,255),3)
 
-        if parmak_mesafe < 100 and not ates_edildi:
+        if parmak_mesafe < 50 and not ates_edildi:
             print("Ateş Edildi")
             ates_edildi = True
             if hedef_mesafe <= hedef_R:
                 skor +=10
+                hedef_x = random.randint(hedef_R,width - hedef_R)
+                hedef_y = random.randint(hedef_R, height - hedef_R)
+
                 print("TAM İSABET!!!")
             else:
                 print("IKSALADIN!!!")    
 
-        elif parmak_mesafe > 160 and ates_edildi:
+        elif parmak_mesafe > 100 and ates_edildi:
             print("Tekrar ateşe hazır")
             ates_edildi = False
         
