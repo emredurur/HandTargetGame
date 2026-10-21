@@ -1,5 +1,6 @@
 import cv2 
 import random
+import time
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
@@ -18,6 +19,12 @@ cap = cv2.VideoCapture(0)
 
 ates_edildi = False
 skor = 0
+sure = 30
+oyun_basladi = False
+oyun_bitti = False
+baslangic_zamani= None
+kalan_sure = sure
+
 hedef_x = None
 hedef_y = None
 hedef_R = 60
@@ -43,11 +50,24 @@ while True:
     if hedef_x is None:
         hedef_x = width // 2 
         hedef_y = height // 2 
-    
+
+    if oyun_basladi:
+        simdiki_zaman = time.monotonic()
+
+        gecen_sure = simdiki_zaman - baslangic_zamani
+
+        kalan_sure = int(max(0, sure - gecen_sure))
+
+    if kalan_sure == 0 and oyun_basladi:
+        oyun_basladi =False
+        oyun_bitti = True
+        print("OYUN BİTTİ")
+              
+        
 
     cv2.circle(frame,(hedef_x,hedef_y),hedef_R,(0,0,255),-1)
-    cv2.putText(frame,f"SKOR: {skor}",(60,70),cv2.FONT_HERSHEY_SIMPLEX,3,(132,189,30),3)
-
+    cv2.putText(frame,f"SKOR: {skor}",(60,70),cv2.FONT_HERSHEY_SIMPLEX,3,(1,19,123),3)
+    cv2.putText(frame,f"KALAN SÜRE:{kalan_sure}",(1100,100),cv2.FONT_HERSHEY_SIMPLEX,3,(1,19,123),3)
 
     if detection_result.hand_landmarks:   
         hand = detection_result.hand_landmarks[0]
@@ -68,7 +88,7 @@ while True:
         cv2.line(frame,(x_degeri-25,y_degeri),(x_degeri+25,y_degeri),(0,0,255),3)
         cv2.line(frame,(x_degeri,y_degeri-25),(x_degeri,y_degeri+25),(0,0,255),3)
 
-        if parmak_mesafe < 50 and not ates_edildi:
+        if parmak_mesafe < 50 and not ates_edildi and oyun_basladi:
             print("Ateş Edildi")
             ates_edildi = True
             if hedef_mesafe <= hedef_R:
@@ -80,21 +100,29 @@ while True:
             else:
                 print("IKSALADIN!!!")    
 
-        elif parmak_mesafe > 100 and ates_edildi:
+        elif parmak_mesafe > 100 and ates_edildi and oyun_basladi:
             print("Tekrar ateşe hazır")
             ates_edildi = False
         
-        
-       # print(f"Parmaklar arasi mesafe: {parmak_mesafe:.2f} piksel")
-        print(f"hedef ile parmak arası mesafe: {hedef_mesafe:.2f} piksel")
+  
+       # print(f"hedef ile parmak arası mesafe: {hedef_mesafe:.2f} piksel")
 
     else:  # el gösterilmeszse belirt
         print("xxxxx")
 
 
     cv2.imshow("frame",frame)
+    key = cv2.waitKey(1) & 0xFF
 
-    if cv2.waitKey(1) & 0xFF == ord("q") :
+    if key == ord('s') and not oyun_basladi:
+        oyun_basladi = True
+        baslangic_zamani = time.monotonic()
+        skor = 0
+        ates_edildi =False
+        oyun_bitti = False
+        print("OYUN BASLADI!")
+
+    elif key == ord("q"):
         break
 
 cap.release()
