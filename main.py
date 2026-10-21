@@ -1,7 +1,9 @@
 import cv2 
+import random
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
+
 
 
 
@@ -15,6 +17,11 @@ detector = vision.HandLandmarker.create_from_options(options) # Modeli oluştur
 cap = cv2.VideoCapture(0)
 
 ates_edildi = False
+skor = 0
+hedef_x = None
+hedef_y = None
+hedef_R = 60
+
 
 while True:
 
@@ -33,12 +40,13 @@ while True:
     # Görüntünün boyutlarını al
     height, width = frame.shape[:2]
 
-    hedef_x = width // 2
-    hedef_y = height // 2
-    hedef_R = 60
-
+    if hedef_x is None:
+        hedef_x = width // 2 
+        hedef_y = height // 2 
+    
 
     cv2.circle(frame,(hedef_x,hedef_y),hedef_R,(0,0,255),-1)
+    cv2.putText(frame,f"SKOR: {skor}",(60,70),cv2.FONT_HERSHEY_SIMPLEX,3,(132,189,30),3)
 
 
     if detection_result.hand_landmarks:   
@@ -63,6 +71,11 @@ while True:
         if parmak_mesafe < 100 and not ates_edildi:
             print("Ateş Edildi")
             ates_edildi = True
+            if hedef_mesafe <= hedef_R:
+                skor +=10
+                print("TAM İSABET!!!")
+            else:
+                print("IKSALADIN!!!")    
 
         elif parmak_mesafe > 160 and ates_edildi:
             print("Tekrar ateşe hazır")
